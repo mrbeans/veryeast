@@ -1,7 +1,6 @@
 import requests
 import json
 
-
 class VeryEast(object):
     Headers={
         "User-Agent":"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
@@ -12,15 +11,21 @@ class VeryEast(object):
     SearchUrl="http://vip.veryeast.cn/search/index"
     FormData="pager=%s&per=50&advanced=1&job_id=0&is_search=1&keyword=&keyword_type=1&marital=0&language_level=-1&language_type=-1&resume_type=-1&user_id=&gender=0&domicile_location=&current_location=&work_mode=-1&age_end=&age_start=&work_year=0&desired_salary=-1&degree=0&desired_location=&=&arrival_date=-1&update_date=360&desired_job=&id=0"
 
-    def getData():
-        lastPage=0
+    def __init__(self):
+        self.headers=VeryEast.Headers
+        self.searchUrl=VeryEast.SearchUrl
+        self.formData=VeryEast.FormData
+
+    def getData(self):
+        lastPage=1
         currentPage=0
         
         saveData=open('veryeast.json','a+',encoding='utf-8')
         saveData.write('[')
         while(currentPage<lastPage):
             ++currentPage
-            response=requests.post(searchUrl,headers=headers,data=formData%currentPage)
+            print(currentPage)
+            response=requests.post(self.searchUrl,headers=self.headers,data=self.formData%currentPage)
             jsonData=json.loads(response.content.decode('utf-8'))
             if(jsonData==None and jsonData['data']!=None):
                 return
