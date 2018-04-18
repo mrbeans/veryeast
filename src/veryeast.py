@@ -6,7 +6,7 @@ class VeryEast(object):
     Headers={
         "User-Agent":"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
         "X-Requested-With":"XMLHttpRequest",
-        "Cookie":r"closePop=true; td_cookie=833740359; _ga=GA1.2.872748135.1523341077; _gid=GA1.2.1973532055.1523341077; ticket=727bbsSsgVZtHLS0ZY1Z1cTENvuVsXZVNTeM1bInjqslt59VLbpIEIBq25tXgSAlPO0a6%2BHnGkmQ7la0Cd8I; username=waterman; user_type=1; current_app=a%3A1%3A%7Bi%3A1%3Bi%3A1%3B%7D; _expire=1523945892; uid=very_2840997; sdktoken=8681f18f929279ea2ce59fb324c30e06; nickName=18621538364@%u5468%u53E3%u65C5%u5982%u5BB6%u9152%u5E97; avatar=; ps_search_viewcontactlist=10; ps_credit_gain=10; closePop=true; ps_resume_resumelist=10; ps_resume_favoritelist=10; ps_search_index=50",
+        "Cookie":r"_ga=GA1.2.872748135.1523341077; ps_search_viewcontactlist=10; ps_credit_gain=10; ps_resume_resumelist=10; ps_resume_favoritelist=10; ps_search_index=50; UM_distinctid=162b976c14924d-03297a56208689-3a614f0b-1fa400-162b976c14a231; Hm_lvt_bb6401d33941b99b0b91e2622ae7596d=1523339145,1523529992,1523848235,1524043515; _gid=GA1.2.1011644382.1524043515; _gat=1; ticket=29845HL0bcDJvzUaxQdrQlyzPsi3Y1sWmM0Ep7C4D1WIih%2BA9tV1X5RnNFAIlfMQQysqMOfzy3UI2dV737bk; username=waterman; user_type=1; current_app=a%3A1%3A%7Bi%3A1%3Bi%3A1%3B%7D; _expire=1524648368; Hm_lpvt_bb6401d33941b99b0b91e2622ae7596d=1524043546; td_cookie=903990759; closePop=true; uid=very_2840997; sdktoken=8681f18f929279ea2ce59fb324c30e06; nickName=18621538364@%u5468%u53E3%u65C5%u5982%u5BB6%u9152%u5E97; avatar=",
         "Content-Type":"application/x-www-form-urlencoded"
     }
     PreviewUrl="http://vip.veryeast.cn/resume/preview/{0}"
@@ -52,7 +52,8 @@ class VeryEast(object):
         print('download success!!!')
     
     def getPreview(self):
-        self.db
+        pass
+        # self.db['baseinfo'].find()
 
-        response=requests.get(self.previewUrl.format)
+        # response=requests.get(self.previewUrl.format)
         
