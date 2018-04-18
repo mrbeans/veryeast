@@ -1,6 +1,7 @@
 import requests
 import json
 import pymongo
+from bs4 import BeautifulSoup
 
 class VeryEast(object):
     Headers={
@@ -52,8 +53,14 @@ class VeryEast(object):
         print('download success!!!')
     
     def getPreview(self):
-        pass
-        # self.db['baseinfo'].find()
-
-        # response=requests.get(self.previewUrl.format)
+        cursor=self.db['baseinfo'].find({"gender": " 男","work_year": "4","degree": "高中 ","desire_job_num": 2},{"user_id": 1})
+        try:
+            print(cursor.count())
+            for data in cursor:
+                print(data["user_id"])
+                response=requests.get(self.previewUrl.format(data["user_id"]))
+                soup=BeautifulSoup(response.content,"lxml")
+                last_update_time=soup.find('*[@id="preview"]/div[class_="c_last_time"]/span/strong.string')
+        finally:
+            cursor.close()
         
