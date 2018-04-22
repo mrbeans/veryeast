@@ -1,7 +1,7 @@
 import requests
 import json
 import pymongo
-from bs4 import BeautifulSoup
+from lxml import etree
 
 class VeryEast(object):
     Headers={
@@ -53,14 +53,20 @@ class VeryEast(object):
         print('download success!!!')
     
     def getPreview(self):
-        cursor=self.db['baseinfo'].find({"gender": " 男","work_year": "4","degree": "高中 ","desire_job_num": 2},{"user_id": 1})
+        cursor=self.db['baseinfo'].find({"gender": " 男","work_year": "4","degree": "高中 ","desire_job_num": 2},{"user_id": 1}).limit(1)
         try:
-            print(cursor.count())
             for data in cursor:
-                print(data["user_id"])
-                response=requests.get(self.previewUrl.format(data["user_id"]))
-                soup=BeautifulSoup(response.content,"lxml")
-                last_update_time=soup.find('*[@id="preview"]/div[class_="c_last_time"]/span/strong.string')
+                response=requests.get(self.previewUrl.format(data["user_id"]),headers=self.headers)
+                response.encoding='utf-8'
+                tree=etree.HTML(response.content)
+                last_view_time=tree.xpath('//*[@id="preview"]/div[@class="c_last_time"]/span/strong/text()')[0]
+                last_update_time=tree.xpath('//*[@id="preview"]/div[@class="c_update_time"]/strong/text()')[0]
+                base_info=tree.xpath('//*[@id="preview"]/div[@class="resume_preview"]/div[@class="resume_preview_top"]/div[@class="resume_preview_top_left"]/div[@class="preview_left_list"]')
+                if(len(base_info)>0):
+                    for info in base_info:
+                        lis=info.xpath('.//ul/li')
+                        if(len(lis)>0):
+                            for li in lis:
+                                print(li.text)
         finally:
             cursor.close()
-        
