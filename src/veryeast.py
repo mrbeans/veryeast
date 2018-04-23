@@ -59,14 +59,26 @@ class VeryEast(object):
                 response=requests.get(self.previewUrl.format(data["user_id"]),headers=self.headers)
                 response.encoding='utf-8'
                 tree=etree.HTML(response.content)
-                last_view_time=tree.xpath('//*[@id="preview"]/div[@class="c_last_time"]/span/strong/text()')[0]
-                last_update_time=tree.xpath('//*[@id="preview"]/div[@class="c_update_time"]/strong/text()')[0]
-                base_info=tree.xpath('//*[@id="preview"]/div[@class="resume_preview"]/div[@class="resume_preview_top"]/div[@class="resume_preview_top_left"]/div[@class="preview_left_list"]')
-                if(len(base_info)>0):
-                    for info in base_info:
-                        lis=info.xpath('.//ul/li')
-                        if(len(lis)>0):
-                            for li in lis:
-                                print(li.text)
+                preview={}
+                preview['last_view_time']=tree.xpath('//*[@id="preview"]/div[@class="c_last_time"]/span/strong/text()')[0]
+                preview['last_update_time']=tree.xpath('//*[@id="preview"]/div[@class="c_update_time"]/strong/text()')[0]
+
+                resume_preview=tree.xpath('//*[@id="preview"]/div[@class="resume_preview"]')[0]
+                userface=resume_preview.xpath('//div[@class="resume_preview_top"]/div[@class="resume_preview_top_right"]/a/img/@src')
+                if(len(userface)>0):
+                    preview['userface']=userface[0]
+                
+                preview_main_list=resume_preview.xpath('//div[@class="resume_preview_main"]')
+                for main in preview_main_list:
+                    title=main.xpath('//h1/text()')[0]
+                    if(title=='最近一份工作'):
+                        lastest_work={}
+                        company=main.xpath('//ul/li/strong/text()')[0].strip().split(' ')
+                        lastest_work['company_name']=company[0]
+                        del company[0]
+                        lastest_work['company_date']="".join(company)
+                        
+                        company_detail=main.xpath('//ul/li[not(0)]/strong/text()')[0].strip().split(' ')
+                        print(lastest_work)
         finally:
             cursor.close()
