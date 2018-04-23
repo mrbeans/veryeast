@@ -68,6 +68,29 @@ class VeryEast(object):
                 if(len(userface)>0):
                     preview['userface']=userface[0]
                 
+                #左侧基本信息
+                resume_preview_top_left=resume_preview.xpath('//div[@class="resume_preview_top"]/div[@class="preview_left_list"]')
+                address={}
+                for info in resume_preview_top_left:
+                    addr=info.xpath('//ul[@class="addr"]')
+                    if(addr==None):
+                        continue
+                    lis=addr.xpath('//li/text()')[0]
+                    for li in lis:
+                        key,value=li.replace(' ','').split('：')
+                        if(key=='现居地'):
+                            address['living_place']=value
+                        elif(key=='户籍地'):
+                            address['domicile_place']=value
+                        elif(key=='国籍'):
+                            address['country']=value
+                        elif(key=='政治面貌'):
+                            address['political_status']=value
+                        elif(key=='民族'):
+                            address['nation']=value
+                preview['address']=address
+                                
+                #下面的详细内容
                 preview_main_list=resume_preview.xpath('//div[@class="resume_preview_main"]')
                 for main in preview_main_list:
                     title=main.xpath('//h1/text()')[0]
@@ -80,5 +103,9 @@ class VeryEast(object):
                         
                         company_detail=main.xpath('//ul/li[not(0)]/strong/text()')[0].strip().split(' ')
                         print(lastest_work)
+                    elif(title=='求职意向'):
+                    elif(title=='工作经验'):
+                    elif(title=='技能与特长'):
+                    elif(title=='教育经历'):
         finally:
             cursor.close()
