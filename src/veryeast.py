@@ -56,7 +56,8 @@ class VeryEast(object):
         cursor=self.db['baseinfo'].find({"gender": " 男","work_year": "4","degree": "高中 ","desire_job_num": 2},{"user_id": 1}).limit(1)
         try:
             for data in cursor:
-                response=requests.get(self.previewUrl.format(data["user_id"]),headers=self.headers)
+                #response=requests.get(self.previewUrl.format(data["user_id"]),headers=self.headers)
+                response=requests.get('http://vip.veryeast.cn/resume/preview/814048',headers=self.headers)
                 response.encoding='utf-8'
                 tree=etree.HTML(response.content)
                 preview={}
@@ -64,32 +65,41 @@ class VeryEast(object):
                 preview['last_update_time']=tree.xpath('//*[@id="preview"]/div[@class="c_update_time"]/strong/text()')[0]
 
                 resume_preview=tree.xpath('//*[@id="preview"]/div[@class="resume_preview"]')[0]
-                userface=resume_preview.xpath('//div[@class="resume_preview_top"]/div[@class="resume_preview_top_right"]/a/img/@src')
+                
+                resume_preview_top=resume_preview.xpath('//div[@class="resume_preview_top"]')[0]
+                
+                resume_preview_top_right=resume_preview_top.xpath('//div[@class="resume_preview_top_right"]')[0]
+                
+                userface=resume_preview_top_right.xpath('//a/img/@src')
                 if(len(userface)>0):
                     preview['userface']=userface[0]
                 
                 #左侧基本信息
-                resume_preview_top_left=resume_preview.xpath('//div[@class="resume_preview_top"]/div[@class="preview_left_list"]')
-                address={}
+                resume_preview_top_left=resume_preview_top.xpath('//div[@class="resume_preview_top_left"]')[0]
+                
+                resume_preview_top_left_list=resume_preview_top_left.xpath('//div[@class="preview_left_list"]')
+                baseinfo={}
                 for info in resume_preview_top_left:
-                    addr=info.xpath('//ul[@class="addr"]')
+                    addr=info.xpath('//ul[contains(@class,"addr")]')[0]
                     if(addr==None):
                         continue
-                    lis=addr.xpath('//li/text()')[0]
+                    lis=addr.xpath('//li/text()')
                     for li in lis:
                         key,value=li.replace(' ','').split('：')
                         if(key=='现居地'):
-                            address['living_place']=value
+                            baseinfo['living_place']=value
                         elif(key=='户籍地'):
-                            address['domicile_place']=value
+                            baseinfo['domicile_place']=value
                         elif(key=='国籍'):
-                            address['country']=value
+                            baseinfo['country']=value
                         elif(key=='政治面貌'):
-                            address['political_status']=value
+                            baseinfo['political_status']=value
                         elif(key=='民族'):
-                            address['nation']=value
-                preview['address']=address
-                                
+                            baseinfo['nation']=value
+                        elif(key=='证件号码'):
+                            baseinfo['IDCard']=value
+                preview['baseinfo']=baseinfo
+                print(preview)
                 #下面的详细内容
                 preview_main_list=resume_preview.xpath('//div[@class="resume_preview_main"]')
                 for main in preview_main_list:
@@ -102,10 +112,14 @@ class VeryEast(object):
                         lastest_work['company_date']="".join(company)
                         
                         company_detail=main.xpath('//ul/li[not(0)]/strong/text()')[0].strip().split(' ')
-                        print(lastest_work)
+                        #print(lastest_work)
                     elif(title=='求职意向'):
+                        job_intension={}
                     elif(title=='工作经验'):
+                        pass
                     elif(title=='技能与特长'):
+                        pass
                     elif(title=='教育经历'):
+                        pass
         finally:
             cursor.close()
