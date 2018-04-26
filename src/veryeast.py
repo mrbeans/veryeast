@@ -7,7 +7,7 @@ class VeryEast(object):
     Headers={
         "User-Agent":"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
         "X-Requested-With":"XMLHttpRequest",
-        "Cookie":r"_ga=GA1.2.872748135.1523341077; ps_search_viewcontactlist=10; ps_credit_gain=10; ps_resume_resumelist=10; ps_resume_favoritelist=10; ps_search_index=50; UM_distinctid=162b976c14924d-03297a56208689-3a614f0b-1fa400-162b976c14a231; Hm_lvt_bb6401d33941b99b0b91e2622ae7596d=1523339145,1523529992,1523848235,1524043515; _gid=GA1.2.1011644382.1524043515; _gat=1; ticket=29845HL0bcDJvzUaxQdrQlyzPsi3Y1sWmM0Ep7C4D1WIih%2BA9tV1X5RnNFAIlfMQQysqMOfzy3UI2dV737bk; username=waterman; user_type=1; current_app=a%3A1%3A%7Bi%3A1%3Bi%3A1%3B%7D; _expire=1524648368; Hm_lpvt_bb6401d33941b99b0b91e2622ae7596d=1524043546; td_cookie=903990759; closePop=true; uid=very_2840997; sdktoken=8681f18f929279ea2ce59fb324c30e06; nickName=18621538364@%u5468%u53E3%u65C5%u5982%u5BB6%u9152%u5E97; avatar=",
+        "Cookie":r"_ga=GA1.2.872748135.1523341077; ps_search_viewcontactlist=10; ps_credit_gain=10; ps_resume_resumelist=10; ps_resume_favoritelist=10; ps_search_index=50; UM_distinctid=162b976c14924d-03297a56208689-3a614f0b-1fa400-162b976c14a231; td_cookie=944934255; _gid=GA1.2.22497359.1524715056; Hm_lvt_bb6401d33941b99b0b91e2622ae7596d=1524043515,1524109454,1524452968,1524715056; ticket=b82eeG4otXky%2FOfojvpN4Ya1Fjk%2FDpzlVUljGOSYhEEUIyGB9LT%2FqX1%2FdIuyl3Rj5JhG%2B0aY2xnp1jrT%2BuxE; username=waterman; user_type=1; current_app=a%3A1%3A%7Bi%3A1%3Bi%3A1%3B%7D; _expire=1525319936; closePop=true; uid=very_2840997; sdktoken=8681f18f929279ea2ce59fb324c30e06; nickName=18621538364@%u5468%u53E3%u65C5%u5982%u5BB6%u9152%u5E97; avatar=; Hm_lpvt_bb6401d33941b99b0b91e2622ae7596d=1524715076",
         "Content-Type":"application/x-www-form-urlencoded"
     }
     PreviewUrl="http://vip.veryeast.cn/resume/preview/{0}"
@@ -66,26 +66,26 @@ class VeryEast(object):
 
                 resume_preview=tree.xpath('//*[@id="preview"]/div[@class="resume_preview"]')[0]
                 
-                resume_preview_top=resume_preview.xpath('//div[@class="resume_preview_top"]')[0]
+                resume_preview_top=resume_preview.xpath('div[@class="resume_preview_top"]')[0]
                 
-                resume_preview_top_right=resume_preview_top.xpath('//div[@class="resume_preview_top_right"]')[0]
+                resume_preview_top_right=resume_preview_top.xpath('div[@class="resume_preview_top_right"]')[0]
                 
-                userface=resume_preview_top_right.xpath('//a/img/@src')
+                userface=resume_preview_top_right.xpath('a/img/@src')
                 if(len(userface)>0):
                     preview['userface']=userface[0]
                 
                 #左侧基本信息
-                resume_preview_top_left=resume_preview_top.xpath('//div[@class="resume_preview_top_left"]')[0]
+                resume_preview_top_left=resume_preview_top.xpath('div[@class="resume_preview_top_left"]')[0]
                 
-                resume_preview_top_left_list=resume_preview_top_left.xpath('//div[@class="preview_left_list"]')
+                resume_preview_top_left_list=resume_preview_top_left.xpath('div[@class="preview_left_list"]')
                 baseinfo={}
                 for info in resume_preview_top_left:
-                    addr=info.xpath('//ul[contains(@class,"addr")]')[0]
-                    if(addr==None):
+                    addr=info.xpath('ul[contains(@class,"addr")]')
+                    if(addr==None or len(addr)<=0):
                         continue
-                    lis=addr.xpath('//li/text()')
+                    lis=addr[0].xpath('li/text()')
                     for li in lis:
-                        key,value=li.replace(' ','').split('：')
+                        key,value=li.replace(' ','').replace('：',':').split(':')
                         if(key=='现居地'):
                             baseinfo['living_place']=value
                         elif(key=='户籍地'):
@@ -99,20 +99,29 @@ class VeryEast(object):
                         elif(key=='证件号码'):
                             baseinfo['IDCard']=value
                 preview['baseinfo']=baseinfo
-                print(preview)
                 #下面的详细内容
-                preview_main_list=resume_preview.xpath('//div[@class="resume_preview_main"]')
+                preview_main_list=resume_preview.xpath('div[@class="resume_preview_main"]')
                 for main in preview_main_list:
-                    title=main.xpath('//h1/text()')[0]
+                    title=main.xpath('h1/text()')[0]
                     if(title=='最近一份工作'):
                         lastest_work={}
-                        company=main.xpath('//ul/li/strong/text()')[0].strip().split(' ')
+                        company=main.xpath('ul/li/strong/text()')[0].strip().split(' ')
                         lastest_work['company_name']=company[0]
                         del company[0]
                         lastest_work['company_date']="".join(company)
                         
-                        company_detail=main.xpath('//ul/li[not(0)]/strong/text()')[0].strip().split(' ')
-                        #print(lastest_work)
+                        company_detail=main.xpath('ul/li[not(0)]/text()')
+                        for detail in company_detail:
+                            if(len(detail.strip())<=0):
+                                continue
+                            k,v=detail.replace(' ','').replace('：',':').split(':')
+                            if(k=='企业性质'):
+                                lastest_work['nature']=v
+                            elif(k=='职位'):
+                                lastest_work['job_title']=v
+                            else:
+                                raise Exception('最近一份工作-有未处理的字段，地址：%s'%self.previewUrl.format(data["user_id"]))
+                        print(lastest_work)
                     elif(title=='求职意向'):
                         job_intension={}
                     elif(title=='工作经验'):
