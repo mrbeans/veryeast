@@ -60,6 +60,7 @@ class VeryEast(object):
                 response=requests.get('http://vip.veryeast.cn/resume/preview/814048',headers=self.headers)
                 response.encoding='utf-8'
                 tree=etree.HTML(response.content)
+                tree=etree.HTML(response.content.decode('utf-8').replace('：',':').replace(u'\xa0',u'').replace(u'\u25aa',u''))
                 preview={}
                 preview['last_view_time']=tree.xpath('//*[@id="preview"]/div[@class="c_last_time"]/span/strong/text()')[0]
                 preview['last_update_time']=tree.xpath('//*[@id="preview"]/div[@class="c_update_time"]/strong/text()')[0]
@@ -85,7 +86,7 @@ class VeryEast(object):
                         continue
                     lis=addr[0].xpath('li/text()')
                     for li in lis:
-                        key,value=li.replace(' ','').replace('：',':').split(':')
+                        key,value=li.replace(' ','').split(':')
                         if(key=='现居地'):
                             baseinfo['living_place']=value
                         elif(key=='户籍地'):
@@ -114,13 +115,13 @@ class VeryEast(object):
                         for detail in company_detail:
                             if(len(detail.strip())<=0):
                                 continue
-                            k,v=detail.replace(' ','').replace('：',':').split(':')
-                            k=k.replace(u'\u3000',u'').replace(u'\xa0',u'')
-                            v=v.replace(u'\u3000',u'').replace(u'\xa0',u'')
+                            k,v=detail.replace(' ','').split(':')
+                            k=k.replace(u'\u3000',u'')
+                            v=v.replace(u'\u3000',u'')
                             if(k=='企业性质'):
                                 lastest_work['nature']=v
                             elif(k=='职位'):
-                                lastest_work['job_title']=v
+                                lastest_work['job_title']=v.replace(u'\xa0\xa0',u'-')
                             else:
                                 raise Exception('最近一份工作-有未处理的字段，地址：{0}'.format(self.previewUrl.format(data["user_id"])))
                         preview['lastest_work']=lastest_work
@@ -130,9 +131,9 @@ class VeryEast(object):
                         if(len(intensions)<=0):
                             continue
                         for intension in intensions:
-                            k,v=intension.replace(' ','').replace('：',':').split(':')
-                            k=k.replace(u'\u3000',u'').replace(u'\xa0',u'')
-                            v=v.replace(u'\u3000',u'').replace(u'\xa0',u'')
+                            k,v=intension.replace(' ','').split(':')
+                            k=k.replace(u'\u3000',u'')
+                            v=v.replace(u'\u3000',u'')
                             if(k=='到岗时间'):
                                 job_intension['AvailableReportDuty']=v
                             elif(k=='工作类型'):
@@ -147,17 +148,82 @@ class VeryEast(object):
                                 job_intension['IntentMoney']=v
                         preview['job_intension']=job_intension
                     elif(title=='工作经验'):
+                        work_experiences=[]
+                        work_ul=main.xpath('ul')
+                        if(len(work_ul)<=0):
+                            continue
+                        for w_ul in work_ul:
+                            experience={}
+                            strong=w_ul.xpath('li/strong/text()')[0].replace(u'\u3000',u'').split(' ')
+                            if(len(strong)<=0):
+                                continue
+                            while '' in strong:
+                                strong.remove('')
+                            experience['date']=strong[0]+strong[1]
+                            experience['company']=strong[2]
+                            experience['industry']=strong[3]
 
-                        pass
+                            work_base_info=w_ul.xpath('li/ul[@class="addr"]/li/text()')
+                            if(len(work_base_info)<=0):
+                                continue
+                            for wbi in work_base_info:
+                                k,v=wbi.replace(' ','').replace(u'\u3000',u'').split(':')
+                                if(k=='职位'):
+                                    experience['position']=v
+                                elif(k=='所在城市'):
+                                    experience['city']=v
+                                else:
+                                    raise Exception('工作经历-有未处理的字段，地址：{0}'.format(self.previewUrl.format(data["user_id"])))
+                            
+                            work_li=w_ul.xpath('li[position()>2]')
+                            if(len(work_li)<=0):
+                                continue
+                            for w_li in work_li:
+                                kv=w_li.xpath('string(.)').replace(' ','').replace(u'\u3000',u'').split(':')
+                                if(len(kv)>2):
+                                    k=w_li.xpath('span/text()')[0].replace(' ','').replace(':','')
+                                    v=w_li.xpath('div[@class="resumes_detail"]')[0].xpath('string(.)').replace(u'\u3000',u'')
+                                else:
+                                    k,v=kv
+                                if(k=='职位薪资'):
+                                    experience['salary']=v
+                                elif(k=='岗位职责'):
+                                    experience['post_duties']=v
+                                elif(k=='企业性质'):
+                                    experience['company_type']=v
+                                elif(k=='企业规模'):
+                                    experience['company_scale']=v
+                                elif(k=='所在部门'):
+                                    experience['department']=v
+                                elif(k=='下属人数'):
+                                    experience['staff_count']=v
+                                elif(k=='汇报对象'):
+                                    experience['report_person']=v
+                                elif(k=='企业简介'):
+                                    experience['company_description']=v
+                                elif(k=='离职原因'):
+                                    experience['left_reason']=v
+                                elif(k=='工作业绩'):
+                                    experience['achievement']=v
+                                elif(k=='离职证明人'):
+                                    experience['left_witness']=v
+                                elif(k=='证明人职位'):
+                                    experience['witness_title']=v
+                                elif(k=='证明人电话'):
+                                    experience['witness_phone']=v
+                                else:
+                                    raise Exception('工作经历-有未处理的字段，地址：{0}'.format(self.previewUrl.format(data["user_id"])))
+                            work_experiences.insert(0,experience)
+                        preview['work_experiences']=work_experiences
                     elif(title=='语言能力'):
                         language_info={}
                         languages=main.xpath('ul/li/text()')
                         if(len(languages)<=0):
                             continue
                         for language in languages:
-                            k,v=language.replace(' ','').replace('：',':').split('\u3000')
-                            k=k.replace(u'\u3000',u'').replace(u'\xa0',u'')
-                            v=v.replace(u'\u3000',u'').replace(u'\xa0',u'')
+                            k,v=language.replace(' ','').split('\u3000')
+                            k=k.replace(u'\u3000',u'')
+                            v=v.replace(u'\u3000',u'')
                             if(k=='中国普通话'):
                                 language_info['mandarin']=v
                             elif(k=='英语'):
@@ -181,13 +247,13 @@ class VeryEast(object):
                                 skill_info=s_li.xpath('ul/li/text()')
                                 if(len(skill_info)>0):
                                     for i in skill_info:
-                                        k,v=i.replace(' ','').replace('：',':').split(':')
+                                        k,v=i.replace(' ','').split(':')
                                         if(k=='特长名称'):
                                             s['name']=v
                                         if(k=='掌握程度'):
                                             s['level']=v
                                 else:
-                                    k,v=s_li.xpath('string(.)').replace(' ','').replace('：',':').split(':')
+                                    k,v=s_li.xpath('string(.)').replace(' ','').split(':')
                                     if(k=='描述'):
                                         s['infos']=v
                             special_skills.insert(0,s)
@@ -233,7 +299,7 @@ class VeryEast(object):
                             if(len(train_li)<=0):
                                 continue
                             for t_li in train_li:
-                                k,v=t_li.replace(' ','').replace('：',':').split(':')
+                                k,v=t_li.replace(' ','').split(':')
                                 if(k=='描述'):
                                     train['description']=v
                                 elif(k=='培训机构'):
