@@ -42,7 +42,8 @@ class VeryEast(object):
             response=requests.post(self.searchUrl,headers=self.headers,data=self.formData%currentPage)
             jsonData=json.loads(response.content.decode('utf-8'))
             if(jsonData==None and jsonData['data']!=None):
-                return
+                print("第{0}页没有获取到数据，请检查".format(currentPage))
+                continue
             lastPage=jsonData['data']['pager']['allPages']
             dataList=jsonData['data']['list']
             print('currentPage:{0},   lastPage:{1}'.format(currentPage,lastPage))
