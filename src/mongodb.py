@@ -5,8 +5,8 @@ class MyMongoDB(object):
         'host': '127.0.0.1',
         'port': 27017,
         'db_veryeast':'veryeast',
-        'table_base_info': 'veryeast',
-        'table_preview': 'veryeast',
+        'table_base_info': 'baseinfo',
+        'table_preview': 'preview',
         'username': None,
         'password': None
     }
@@ -21,10 +21,10 @@ class MyMongoDB(object):
     
     def getDB(self,dbname):
         if(MyMongoDB.MONGODB_CONFIG[dbname]==None):
-            raise Exception("the special database ")
+            raise Exception("the special database {0} doesn't exist".format(dbname))
         return self.client[MyMongoDB.MONGODB_CONFIG[dbname]]
     
     def getCollection(self,dbname,collectionName):
         if(MyMongoDB.MONGODB_CONFIG[dbname]==None):
-            raise Exception("the special database ")
+            raise Exception("the special database {0} doesn't exist".format(dbname))
         return self.client[MyMongoDB.MONGODB_CONFIG[dbname]]['collectionName']
